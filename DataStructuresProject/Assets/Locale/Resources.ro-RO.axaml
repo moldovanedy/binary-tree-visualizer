@@ -1,0 +1,14 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+    <system:String x:Key="Strings.Insert">Inserare</system:String>
+    <system:String x:Key="Strings.Remove">Eliminare</system:String>
+    <system:String x:Key="Strings.Depth">Adâncime</system:String>
+
+    <system:String x:Key="Strings.OK">OK</system:String>
+    <system:String x:Key="Strings.Cancel">Anulare</system:String>
+
+    <system:String x:Key="Strings.NodeKey">Cheie nod</system:String>
+    <system:String x:Key="Strings.Create">Creare</system:String>
+</ResourceDictionary>

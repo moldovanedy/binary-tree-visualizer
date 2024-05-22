@@ -1,0 +1,43 @@
+<UserControl
+    x:Class="DataStructuresProject.Views.Snackbar"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ns="using:DataStructuresProject.Views"
+    d:DesignHeight="80"
+    d:DesignWidth="250"
+    x:DataType="ns:Snackbar"
+    mc:Ignorable="d">
+
+    <Design.DataContext>
+        <ns:Snackbar />
+    </Design.DataContext>
+
+    <Border Name="Border">
+        <Border.Styles>
+            <Style Selector="Border#Border">
+                <Setter Property="Opacity" Value="1" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="BorderThickness" Value="3" />
+                <Setter Property="Margin" Value="10" />
+                <Setter Property="Padding" Value="3" />
+                <Setter Property="Background" Value="#ff424242" />
+
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0:0.300" />
+                    </Transitions>
+                </Setter>
+            </Style>
+        </Border.Styles>
+
+        <Panel
+            Name="MainPanel"
+            Width="250"
+            Height="50"
+            Background="#ff424242">
+            <Label Name="MainLabel" Content="{Binding Message}" />
+        </Panel>
+    </Border>
+</UserControl>

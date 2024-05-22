@@ -1,0 +1,83 @@
+<UserControl
+    x:Class="DataStructuresProject.Views.MainView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Canvas#MainCanvas">
+            <Setter Property="Background" Value="#212121" />
+        </Style>
+        <Style Selector="StackPanel#DetailsPanel">
+            <Setter Property="Background" Value="#80616161" />
+        </Style>
+
+        <Style Selector="Button.ActionButton">
+            <Setter Property="Background" Value="#c0424242" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Margin" Value="0,5,5,0" />
+
+            <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#c0525252" />
+            </Style>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="*,150" RowDefinitions="200,*,22">
+        <Canvas
+            Name="MainCanvas"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            PointerMoved="MainCanvas_PointerMoved"
+            PointerPressed="MainCanvas_PointerPressed"
+            PointerReleased="MainCanvas_PointerReleased"
+            PointerWheelChanged="MainCanvas_PointerWheelChanged"
+            SizeChanged="MainCanvas_SizeChanged" />
+
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="1"
+            HorizontalAlignment="Right">
+            <Button
+                HorizontalAlignment="Right"
+                Classes="ActionButton"
+                Click="InsertButton_Click"
+                Content="{DynamicResource Strings.Insert}" />
+            <Button
+                HorizontalAlignment="Right"
+                Classes="ActionButton"
+                Click="RemoveButton_Click"
+                Content="{DynamicResource Strings.Remove}" />
+        </StackPanel>
+
+        <StackPanel
+            Name="DetailsPanel"
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="2">
+            <Label
+                Name="DetailsLabel"
+                Content="{DynamicResource Strings.Depth}: 0"
+                FontSize="14" />
+        </StackPanel>
+
+        <Panel
+            Name="DialogPanel"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            ZIndex="999" />
+    </Grid>
+</UserControl>
