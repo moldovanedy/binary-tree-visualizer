@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace DataStructuresProject.Core
 {
-    public class BinarySearchTree
+    public class BinarySearchTree : IDisposable
     {
         public int Depth
         {
             get
             {
-                if (_cachedDepth != null)
+                if (_cachedDepth >= 0)
                 {
-                    return _cachedDepth.Value;
+                    return _cachedDepth;
                 }
                 else
                 {
@@ -21,14 +21,25 @@ namespace DataStructuresProject.Core
                 }
             }
         }
-        private int? _cachedDepth;
+        private int _cachedDepth = -1;
+
+        public int Size { get; private set; }
 
         private BinarySearchTreeNode? _root;
 
-        /*public BinarySearchTree()
+        public void Dispose()
         {
-            _root = new BinarySearchTreeNode();
-        }*/
+            List<int> nodeKeys = Traverse(TreeTraversalMode.Inorder);
+            foreach (int nodeKey in nodeKeys)
+            {
+                Delete(nodeKey);
+            }
+
+            _cachedDepth = -1;
+            Size = 0;
+            _root = null;
+            GC.SuppressFinalize(this);
+        }
 
         #region Structure
         public void Insert(int newKey, Dictionary<string, object>? data = null)
@@ -47,6 +58,7 @@ namespace DataStructuresProject.Core
 
             //recalculate depth
             _cachedDepth = GetSubTreeDepth(_root);
+            Size++;
         }
 
         public BinarySearchTreeNode? Search(int keyToSearch)
@@ -56,75 +68,52 @@ namespace DataStructuresProject.Core
 
         public bool Delete(int key)
         {
-            BinarySearchTreeNode? parentNode = null;
-            BinarySearchTreeNode? nodeToDelete = _root?.Search(key, ref parentNode);
-            if (nodeToDelete == null || parentNode == null)
+            if (_root == null)
             {
                 return false;
             }
 
-            nodeToDelete.Delete(parentNode);
-            /*//leaf node
-            if (nodeToDelete.LeftNode == null && nodeToDelete.RightNode == null)
+            BinarySearchTreeNode? parentNode = null;
+            BinarySearchTreeNode? nodeToDelete = _root.Search(key, ref parentNode);
+            if (nodeToDelete == null)
             {
-                if (parentNode != null)
-                {
-                    if (parentNode.LeftNode == nodeToDelete)
-                    {
-                        parentNode.LeftNode = null;
-                    }
-                    else
-                    {
-                        parentNode.RightNode = null;
-                    }
-                }
-                //TODO: can reach here if we delete the root node, implement this case
-                else
-                {
-                    return false;
-                }
+                return false;
             }
-            //one child
-            else if (nodeToDelete.LeftNode == null || nodeToDelete.RightNode == null)
-            {
-                //get the non-null one
-                BinarySearchTreeNode? replacingChild = nodeToDelete.LeftNode ?? nodeToDelete.RightNode;
-                if (parentNode != null)
-                {
-                    if (parentNode.LeftNode == nodeToDelete)
-                    {
-                        parentNode.LeftNode = replacingChild;
-                    }
-                    else
-                    {
-                        parentNode.RightNode = replacingChild;
-                    }
-                }
-                //shouldn't be possible to reach here
-                else
-                {
-                    return false;
-                }
-            }
-            //two children
-            else
-            {
-                //it shouldn't be possible to have null here but this will ensure this is the case
-                BinarySearchTreeNode replacingNode = nodeToDelete.LeftNode ?? throw new Exception("An unknown internal error occurred");
-                while (replacingNode.RightNode != null)
-                {
-                    replacingNode = replacingNode.RightNode;
-                }
 
-                //we don't actually delete the node, but rather copy the data from a replacing node and delete that node
-                nodeToDelete.Key = replacingNode.Key;
-                nodeToDelete.Data = replacingNode.Data;
-                //?!?! needs testing
-                parentNode!.RightNode = replacingNode.LeftNode;
-            }*/
+            bool success = nodeToDelete.Delete(parentNode);
+            if (!success)
+            {
+                if (nodeToDelete.Key == _root.Key)
+                {
+                    if (nodeToDelete.LeftNode == null && nodeToDelete.RightNode == null)
+                    {
+                        _root = null;
+                    }
+                    else if (nodeToDelete.LeftNode == null || nodeToDelete.RightNode == null)
+                    {
+                        if (nodeToDelete.LeftNode != null)
+                        {
+                            _root = nodeToDelete.LeftNode;
+                        }
+                        else
+                        {
+                            _root = nodeToDelete.RightNode;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
 
             //recalculate depth
             _cachedDepth = GetSubTreeDepth(_root);
+            Size--;
             return true;
         }
 
@@ -143,24 +132,134 @@ namespace DataStructuresProject.Core
                 return false;
             }
 
+            //depth is recalculated here
             Insert(newKey, dataToCopy);
-
-            //recalculate depth
-            _cachedDepth = GetSubTreeDepth(_root);
             return true;
         }
 
-        public int[] Traverse(TreeTraversalMode traversalMode)
+        public List<int> Traverse(TreeTraversalMode traversalMode)
         {
-            //TODO
-            return [];
+            List<int> results = [];
+            if (_root == null)
+            {
+                return [];
+            }
+
+            Traverse(traversalMode, _root, results);
+            return results;
+        }
+
+        private static void Traverse(TreeTraversalMode traversalMode, BinarySearchTreeNode currentNode, List<int> results)
+        {
+            if (traversalMode == TreeTraversalMode.Preorder)
+            {
+                results.Add(currentNode.Key);
+
+                if (currentNode.LeftNode != null)
+                {
+                    Traverse(TreeTraversalMode.Preorder, currentNode.LeftNode, results);
+                }
+
+                if (currentNode.RightNode != null)
+                {
+                    Traverse(TreeTraversalMode.Preorder, currentNode.RightNode, results);
+                }
+            }
+            else if (traversalMode == TreeTraversalMode.Inorder)
+            {
+                if (currentNode.LeftNode != null)
+                {
+                    Traverse(TreeTraversalMode.Inorder, currentNode.LeftNode, results);
+                }
+
+                results.Add(currentNode.Key);
+
+                if (currentNode.RightNode != null)
+                {
+                    Traverse(TreeTraversalMode.Inorder, currentNode.RightNode, results);
+                }
+            }
+            else if (traversalMode == TreeTraversalMode.Postorder)
+            {
+                if (currentNode.LeftNode != null)
+                {
+                    Traverse(TreeTraversalMode.Postorder, currentNode.LeftNode, results);
+                }
+
+                if (currentNode.RightNode != null)
+                {
+                    Traverse(TreeTraversalMode.Postorder, currentNode.RightNode, results);
+                }
+
+                results.Add(currentNode.Key);
+            }
         }
         #endregion
+
+        #region Utils
+        public List<int> GetLeafNodes()
+        {
+            if (_root != null)
+            {
+                return GetSubtreeLeafNodes(_root);
+            }
+            else
+            {
+                return [];
+            }
+        }
+
+        private static List<int> GetSubtreeLeafNodes(BinarySearchTreeNode node)
+        {
+            List<int> nodes = [];
+            if (node.IsLeafNode)
+            {
+                nodes.Add(node.Key);
+            }
+
+            if (node.LeftNode != null)
+            {
+                nodes.AddRange(GetSubtreeLeafNodes(node.LeftNode));
+            }
+            if (node.RightNode != null)
+            {
+                nodes.AddRange(GetSubtreeLeafNodes(node.RightNode));
+            }
+            return nodes;
+        }
 
         public BinarySearchTreeNode? GetRoot()
         {
             return _root;
         }
+
+        public int GetNodeLevel(int key)
+        {
+            int level = 0;
+            BinarySearchTreeNode? currentNode = _root;
+            while (currentNode != null && currentNode.Key != key)
+            {
+                if (currentNode.Key > key)
+                {
+                    currentNode = currentNode.LeftNode;
+                }
+                else
+                {
+                    currentNode = currentNode.RightNode;
+                }
+                level++;
+            }
+
+            if (currentNode == null)
+            {
+                return -1;
+            }
+            else
+            {
+                return level;
+            }
+        }
+        #endregion
 
         private static int GetSubTreeDepth(BinarySearchTreeNode? node)
         {
@@ -170,27 +269,33 @@ namespace DataStructuresProject.Core
             }
             else
             {
+                bool hasChildren = false;
                 int leftDepth = 0, rightDepth = 0;
-
                 if (node.LeftNode != null)
                 {
-                    leftDepth += GetSubTreeDepth(node.LeftNode);
+                    leftDepth = GetSubTreeDepth(node.LeftNode);
+                    hasChildren = true;
                 }
-                else
-                {
-                    return 1;
-                }
-
                 if (node.RightNode != null)
                 {
-                    rightDepth += GetSubTreeDepth(node.RightNode);
+                    rightDepth = GetSubTreeDepth(node.RightNode);
+                    hasChildren = true;
                 }
-                else
-                {
-                    return 1;
-                }
+                return hasChildren ? Math.Max(leftDepth, rightDepth) + 1 : 0;
+            }
+        }
 
-                return Math.Max(leftDepth, rightDepth);
+        private static void GetSubTreeDepth(BinarySearchTreeNode node, ref int left, ref int right)
+        {
+            if (node.LeftNode != null)
+            {
+                left++;
+                GetSubTreeDepth(node.LeftNode, ref left, ref right);
+            }
+            if (node.RightNode != null)
+            {
+                right++;
+                GetSubTreeDepth(node.RightNode, ref left, ref right);
             }
         }
     }
@@ -279,7 +384,14 @@ namespace DataStructuresProject.Core
             }
         }
 
-        public bool Delete(BinarySearchTreeNode parentNode)
+        /// <summary>
+        /// Deletes the current node and returns true if the deletion was successful,
+        /// if the parent node is null it returns false as it requires special treatment (like setting the root to null or another node).
+        /// </summary>
+        /// <param name="parentNode"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public bool Delete(BinarySearchTreeNode? parentNode)
         {
             //leaf node
             if (this.LeftNode == null && this.RightNode == null)
@@ -295,7 +407,6 @@ namespace DataStructuresProject.Core
                         parentNode.RightNode = null;
                     }
                 }
-                //TODO: can reach here if we delete the root node, implement this case
                 else
                 {
                     return false;
@@ -317,7 +428,6 @@ namespace DataStructuresProject.Core
                         parentNode.RightNode = replacingChild;
                     }
                 }
-                //TODO: can reach here if we delete the root node, implement this case
                 else
                 {
                     return false;
@@ -340,8 +450,16 @@ namespace DataStructuresProject.Core
                 //this will only get a reference to the dictionary, but it's ok because we never clear the dictionary,
                 //just let the GC collect this node when no other variable will have any reference to it
                 this.Data = replacingNode.Data;
-                //should work now
-                localParent!.RightNode = replacingNode.LeftNode;
+
+                //this is a fix for the edge case when the replacing node will actually be this.LeftNode
+                if (localParent != this)
+                {
+                    localParent!.RightNode = replacingNode.LeftNode;
+                }
+                else
+                {
+                    localParent!.LeftNode = replacingNode.LeftNode;
+                }
             }
 
             return true;
@@ -349,6 +467,14 @@ namespace DataStructuresProject.Core
         #endregion
 
         #region Utils
+        public bool IsLeafNode
+        {
+            get
+            {
+                return this.LeftNode == null && this.RightNode == null;
+            }
+        }
+
         public int GetMaxKeyFromSubtree()
         {
             BinarySearchTreeNode? current = this;
@@ -380,6 +506,8 @@ namespace DataStructuresProject.Core
 
             return min;
         }
+
+
         #endregion
 
         #region Data

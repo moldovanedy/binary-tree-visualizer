@@ -8,7 +8,7 @@ namespace DataStructuresProject.Views.Dialogs
     {
         public const int ANIMATION_DURATION = 300;
 
-        public abstract Task<object?> OpenDialog(Controls dialogs);
+        public abstract Task OpenDialog(Controls dialogs);
         public abstract Task CloseDialog(Controls dialogs);
 
         public void Draw(Grid dialogRoot, double rootWidth, double rootHeight, DialogProperties dialogProperties)

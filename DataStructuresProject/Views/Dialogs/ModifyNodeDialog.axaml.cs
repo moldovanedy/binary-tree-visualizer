@@ -8,7 +8,7 @@ using DataStructuresProject.Graphics;
 
 namespace DataStructuresProject.Views.Dialogs
 {
-    public partial class InsertNodeDialog : UserControl, IDialog
+    public partial class ModifyNodeDialog : UserControl, IDialog
     {
         private Controls? _dialogRef;
 
@@ -22,12 +22,12 @@ namespace DataStructuresProject.Views.Dialogs
             HeightPercent = 0.6,
         };
 
-        public InsertNodeDialog()
+        public ModifyNodeDialog()
         {
             InitializeComponent();
         }
 
-        private void InsertNodeDialog_SizeChanged(object? sender, SizeChangedEventArgs e)
+        private void ModifyNodeDialog_SizeChanged(object? sender, RoutedEventArgs e)
         {
             ((IDialog)this).Draw(Root, Root.Bounds.Width, Root.Bounds.Height, DialogProperties);
         }
@@ -35,18 +35,18 @@ namespace DataStructuresProject.Views.Dialogs
         public async Task OpenDialog(Controls dialogs)
         {
             _dialogRef = dialogs;
-            this.SizeChanged += this.InsertNodeDialog_SizeChanged;
+            this.SizeChanged += this.ModifyNodeDialog_SizeChanged;
 
             dialogs.Add(this);
             await FadeInDialog();
-            KeyInput.Focus();
+            OldKeyInput.Focus();
         }
 
         public async Task CloseDialog(Controls dialogs)
         {
             await FadeOutDialog();
             dialogs.Remove(this);
-            this.SizeChanged -= this.InsertNodeDialog_SizeChanged;
+            this.SizeChanged -= this.ModifyNodeDialog_SizeChanged;
 
             _dialogRef = null;
             return;
@@ -80,34 +80,46 @@ namespace DataStructuresProject.Views.Dialogs
             await CloseDialog(_dialogRef!);
         }
 
-        private async void CreateButton_Click(object? sender, RoutedEventArgs e)
+        private async void ModifyButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (KeyInput.Value != null)
+            if (
+                OldKeyInput.Value != null &&
+                NewKeyInput.Value != null &&
+                OldKeyInput.Value != NewKeyInput.Value)
             {
-                bool success = CanvasController.AddNode((int)KeyInput.Value.Value);
-                CreateButton.IsEnabled = false;
-                await CloseDialog(_dialogRef!);
-
-                Core.BinarySearchTreeNode? node = CanvasController.PhysicalItems.Search((int)KeyInput.Value.Value);
-                if (node != null)
-                {
-                    if (node.Data[CanvasController.DataProps[DataNodeProperties.PhysicalNode]] is TreeNode treeNode)
-                    {
-                        await treeNode.AnimateHighlightAsync();
-                    }
-                }
-
+                bool success = CanvasController.DeleteNode((int)OldKeyInput.Value.Value);
                 if (!success)
                 {
-                    if (Application.Current!.TryGetResource("Strings.InsertFailed", out object? errorMessage))
-                    {
-                        await Snackbar.ShowSnackbar(
-                            MainView.Instance!.MainCanvas,
-                            (errorMessage!.ToString() ?? string.Empty) + "!",
-                            Snackbar.MessageSeverity.Error);
-                    }
+                    goto ErrorHandling;
+                }
+                success = CanvasController.AddNode((int)NewKeyInput.Value.Value);
+                if (!success)
+                {
+                    goto ErrorHandling;
                 }
             }
+            ModifyButton.IsEnabled = false;
+            await CloseDialog(_dialogRef!);
+
+            Core.BinarySearchTreeNode? node = CanvasController.PhysicalItems.Search((int)(NewKeyInput.Value ?? 0));
+            if (node != null)
+            {
+                if (node.Data[CanvasController.DataProps[DataNodeProperties.PhysicalNode]] is TreeNode treeNode)
+                {
+                    await treeNode.AnimateHighlightAsync();
+                }
+            }
+            return;
+
+        ErrorHandling:
+            if (Application.Current!.TryGetResource("Strings.ModifyFailed", out object? errorMessage))
+            {
+                await Snackbar.ShowSnackbar(
+                    MainView.Instance!.MainCanvas,
+                    (errorMessage!.ToString() ?? string.Empty) + "!",
+                    Snackbar.MessageSeverity.Error);
+            }
+            await CloseDialog(_dialogRef!);
         }
 
         private async void Grid_KeyUp(object? sender, KeyEventArgs e)
@@ -118,7 +130,7 @@ namespace DataStructuresProject.Views.Dialogs
             }
             if (e.Key == Key.Enter)
             {
-                CreateButton_Click(null, new RoutedEventArgs());
+                ModifyButton_Click(null, new RoutedEventArgs());
             }
         }
     }

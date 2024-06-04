@@ -38,4 +38,8 @@
       <DependentUpon>RemoveNodeDialog.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\Dialogs\ModifyNodeDialog.axaml" />
+  </ItemGroup>
 </Project>

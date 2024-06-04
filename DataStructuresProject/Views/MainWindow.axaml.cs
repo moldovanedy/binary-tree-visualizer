@@ -10,6 +10,8 @@ namespace DataStructuresProject.Views
         /// </summary>
         public static event Action<TimeSpan>? UpdatedFrame;
 
+        private static TimeSpan _lastDelta = new TimeSpan(0, 0, 0);
+
         public MainWindow()
         {
             InitializeComponent();
@@ -21,10 +23,13 @@ namespace DataStructuresProject.Views
 
         private void RequestUpdate(TimeSpan delta)
         {
-            UpdatedFrame?.Invoke(delta);
-            GetTopLevel(this)?.RequestAnimationFrame((TimeSpan delta) =>
+            UpdatedFrame?.Invoke(delta - _lastDelta);
+            _lastDelta = delta;
+
+            //callback
+            GetTopLevel(this)?.RequestAnimationFrame((TimeSpan newDelta) =>
             {
-                RequestUpdate(delta);
+                RequestUpdate(newDelta);
             });
         }
     }

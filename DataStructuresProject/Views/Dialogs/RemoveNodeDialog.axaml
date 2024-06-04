@@ -12,6 +12,7 @@
     <Grid
         Name="Root"
         ColumnDefinitions="*,*,*"
+        KeyUp="Grid_KeyUp"
         RowDefinitions="*,*,*">
         <Grid.Styles>
             <Style Selector="Grid#Root">

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -6,6 +9,8 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
+using DataStructuresProject.Views;
 
 namespace DataStructuresProject.Graphics
 {
@@ -14,7 +19,7 @@ namespace DataStructuresProject.Graphics
         /// <summary>
         /// The top left corner expressed in virtual units.
         /// </summary>
-        public Vector2 Position { get; set; } = Vector2.Zero;
+        public Vector2 Position { get; set; } = new Vector2();
         /// <summary>
         /// The width expressed in virtual units.
         /// </summary>
@@ -25,15 +30,12 @@ namespace DataStructuresProject.Graphics
         public double Height { get; set; }
 
         public abstract Control PhysicalInstance { get; }
-
-        /// <summary>
-        /// Runs every frame like a game loop. For performance, return immediately if nothing needs to be changed.
-        /// </summary>
-        public abstract void Update();
     }
 
     public class TreeNode : CanvasItem
     {
+        public int NodeKey;
+
         public override Control PhysicalInstance
         {
             get
@@ -50,6 +52,9 @@ namespace DataStructuresProject.Graphics
             }
         }
         private Ellipse? _ellipse;
+
+        private bool _hasFocus = false;
+        private bool _isHighlighted = false;
 
         public TreeNode()
         {
@@ -74,7 +79,7 @@ namespace DataStructuresProject.Graphics
         {
             _ellipse = new Ellipse
             {
-                //arrows -> 0, nodes - 1, other -> >= 2
+                //arrows -> 0, nodes -> 1, other -> >= 2
                 ZIndex = 1,
                 Focusable = true,
 
@@ -110,29 +115,95 @@ namespace DataStructuresProject.Graphics
             CanvasRenderer.TransformItemToDeviceCoordinates(this);
         }
 
-        public override void Update()
+        public void ToggleHighlightNode(bool shouldHighlight)
         {
+            if (_ellipse == null)
+            {
+                return;
+            }
+            _isHighlighted = shouldHighlight;
 
+            IEnumerable<ITransition> transitions = _ellipse.Transitions!.Where(
+                (transition) =>
+                {
+                    return
+                        (transition as BrushTransition)!.Property == Shape.StrokeProperty ||
+                        (transition as BrushTransition)!.Property == Shape.FillProperty;
+                });
+            foreach (ITransition transition in transitions)
+            {
+                (transition as BrushTransition)!.Duration = new TimeSpan(0, 0, 0, 0, 300);
+            }
+
+            Task.Delay(5).ContinueWith((task) =>
+            {
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    if (shouldHighlight)
+                    {
+                        SetHighlightedState();
+                    }
+                    else
+                    {
+                        SetNormalStyle();
+                    }
+                });
+            });
+
+            foreach (ITransition transition in transitions)
+            {
+                (transition as BrushTransition)!.Duration = new TimeSpan(0, 0, 0, 0, 100);
+            }
+        }
+
+        public async Task AnimateHighlightAsync()
+        {
+            //305 = 300 for transitions, 5 for setting the Transition property
+            ToggleHighlightNode(true);
+            await Task.Delay(305);
+            await Task.Delay(1000);
+            ToggleHighlightNode(false);
+            await Task.Delay(305);
         }
 
         #region Styles
-        private bool _hasFocus = false;
-
         private void Ellipse_GotFocus(object? sender, GotFocusEventArgs e)
         {
             _hasFocus = true;
             //if it got focus, the pointer must be over it (except keyboard navigation, but that's not supported)
             SetFocusedHoverStyle();
+
+            Core.BinarySearchTreeNode? node = CanvasController.PhysicalItems.Search(NodeKey);
+            if (node != null)
+            {
+                MainView.UpdateNodeDetails(
+                    NodeKey,
+                    CanvasController.PhysicalItems.GetNodeLevel(NodeKey),
+                    node.IsLeafNode);
+            }
         }
 
         private void Ellipse_LostFocus(object? sender, RoutedEventArgs e)
         {
             _hasFocus = false;
-            SetNormalStyle();
+            if (_isHighlighted)
+            {
+                SetHighlightedState();
+            }
+            else
+            {
+                SetNormalStyle();
+            }
+            MainView.UpdateNodeDetails(0, 0, false, false);
         }
 
         private void Ellipse_PointerExited(object? sender, PointerEventArgs e)
         {
+            if (_isHighlighted)
+            {
+                return;
+            }
+
             if (_hasFocus)
             {
                 SetFocusedStyle();
@@ -145,6 +216,11 @@ namespace DataStructuresProject.Graphics
 
         private void Ellipse_PointerEntered(object? sender, PointerEventArgs e)
         {
+            if (_isHighlighted)
+            {
+                return;
+            }
+
             if (_hasFocus)
             {
                 SetFocusedHoverStyle();
@@ -153,6 +229,17 @@ namespace DataStructuresProject.Graphics
             {
                 SetNormalHoverStyle();
             }
+        }
+
+        private void SetHighlightedState()
+        {
+            if (_ellipse == null)
+            {
+                return;
+            }
+
+            _ellipse.Stroke = new SolidColorBrush(0xff_69_f0_ae);
+            _ellipse.Fill = new SolidColorBrush(0xff_2e_7d_32);
         }
 
         private void SetNormalStyle()
@@ -229,11 +316,6 @@ namespace DataStructuresProject.Graphics
             Height = 1;
 
             CanvasRenderer.TransformItemToDeviceCoordinates(this);
-        }
-
-        public override void Update()
-        {
-
         }
     }
 }

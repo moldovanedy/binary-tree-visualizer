@@ -4,11 +4,34 @@
     xmlns:system="clr-namespace:System;assembly=System.Runtime">
     <system:String x:Key="Strings.Insert">Inserare</system:String>
     <system:String x:Key="Strings.Remove">Eliminare</system:String>
+    <system:String x:Key="Strings.Modify">Modificare</system:String>
+    <system:String x:Key="Strings.Recenter">Recentrare</system:String>
+    <system:String x:Key="Strings.Destroy">Distrugere</system:String>
     <system:String x:Key="Strings.Depth">Adâncime</system:String>
+    <system:String x:Key="Strings.Size">Dimensiune</system:String>
 
     <system:String x:Key="Strings.OK">OK</system:String>
     <system:String x:Key="Strings.Cancel">Anulare</system:String>
+    <system:String x:Key="Strings.Yes">Da</system:String>
+    <system:String x:Key="Strings.No">Nu</system:String>
 
     <system:String x:Key="Strings.NodeKey">Cheie nod</system:String>
-    <system:String x:Key="Strings.Create">Creare</system:String>
+    <system:String x:Key="Strings.InsertFailed">Inserarea a eșuat</system:String>
+    <system:String x:Key="Strings.RemoveFailed">Eliminarea a eșuat</system:String>
+    <system:String x:Key="Strings.ModifyFailed">Modificarea a eșuat</system:String>
+
+    <system:String x:Key="Strings.OldKey">Cheie veche</system:String>
+    <system:String x:Key="Strings.NewKey">Cheie nouă</system:String>
+
+    <system:String x:Key="Strings.NodeDetails">Detalii nod:</system:String>
+    <system:String x:Key="Strings.DetailsNodeLevel">Nivel</system:String>
+    <system:String x:Key="Strings.DetailsIsLeafNode">E nod frunză?</system:String>
+
+    <system:String x:Key="Strings.Traverse">Traversare</system:String>
+    <system:String x:Key="Strings.HandleTraversing">Gestionare traversare</system:String>
+    <system:String x:Key="Strings.HighlightLeafNodes">Evidențiere noduri frunză</system:String>
+
+    <system:String x:Key="Strings.Preorder">Preordine:</system:String>
+    <system:String x:Key="Strings.Inorder">Inordine:</system:String>
+    <system:String x:Key="Strings.Postorder">Postordine:</system:String>
 </ResourceDictionary>

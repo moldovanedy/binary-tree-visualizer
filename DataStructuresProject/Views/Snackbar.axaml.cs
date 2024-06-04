@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -91,10 +90,6 @@ namespace DataStructuresProject.Views
 
             snackbar.Opacity = 1;
             await Task.Delay(300);
-
-            Debug.WriteLine(Canvas.GetBottom(snackbar));
-            Debug.WriteLine(Canvas.GetLeft(snackbar));
-            Debug.WriteLine(snackbar.Opacity);
 
             //auto-delete
             Dispatcher.UIThread.Post(async () =>

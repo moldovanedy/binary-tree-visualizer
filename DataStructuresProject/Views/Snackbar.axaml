@@ -23,6 +23,7 @@
                 <Setter Property="Margin" Value="10" />
                 <Setter Property="Padding" Value="3" />
                 <Setter Property="Background" Value="#ff424242" />
+                <Setter Property="ZIndex" Value="2" />
 
                 <Setter Property="Transitions">
                     <Transitions>

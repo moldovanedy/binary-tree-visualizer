@@ -8,9 +8,6 @@ namespace DataStructuresProject.Graphics
 {
     public static class CanvasRenderer
     {
-        public const int VIRTUAL_SAFE_MARGIN_X = 1;
-        public const int VIRTUAL_SAFE_MARGIN_Y = 2;
-
         public static void RedrawAllChildren(BinarySearchTree renderTree)
         {
             RedrawChildrenFromSubtree(renderTree.GetRoot(), null);
@@ -24,14 +21,13 @@ namespace DataStructuresProject.Graphics
             }
 
             double nodePhysicalWidth = 0;
-            Vector2 nodePhysicalPosition = Vector2.Zero;
-            bool isNodeDrawn = true;
+            Vector2 nodePhysicalPosition = new Vector2();
 
             if (subtree.Data.TryGetValue(CanvasController.DataProps[DataNodeProperties.PhysicalNode], out object? physicalNodeData))
             {
                 if (physicalNodeData is CanvasItem canvasItem)
                 {
-                    isNodeDrawn = TransformItemToDeviceCoordinates(canvasItem);
+                    TransformItemToDeviceCoordinates(canvasItem);
                     nodePhysicalWidth = canvasItem.PhysicalInstance.Width;
                     nodePhysicalPosition = new Vector2(
                         Canvas.GetLeft(canvasItem.PhysicalInstance),
@@ -47,15 +43,6 @@ namespace DataStructuresProject.Graphics
             {
                 if (keyText is Label uiLabel)
                 {
-                    if (isNodeDrawn)
-                    {
-                        uiLabel.IsVisible = true;
-                    }
-                    else
-                    {
-                        uiLabel.IsVisible = false;
-                    }
-
                     uiLabel.FontSize = FitFontToNodeSize(subtree.Key.ToString(), nodePhysicalWidth);
                     //will be a square
                     uiLabel.Width = nodePhysicalWidth;
@@ -72,7 +59,7 @@ namespace DataStructuresProject.Graphics
                 {
                     //TransformItemToDeviceCoordinates(arrow);
 
-                    Vector2 arrowStartingPoint = Vector2.Zero;
+                    Vector2 arrowStartingPoint = new Vector2();
                     if (physicalNodeData is CanvasItem thisNode)
                     {
                         arrowStartingPoint = new Vector2(
@@ -101,16 +88,6 @@ namespace DataStructuresProject.Graphics
                         physicalLine.EndPoint = new Avalonia.Point(arrowEndingPoint.X, arrowEndingPoint.Y);
 
                         physicalLine.StrokeThickness = CalculateFinalStrokeThickness(5);
-                        /*if (arrow.IsOrientedNorthEast)
-                        {
-                            physicalLine.StartPoint = new Avalonia.Point(0, 0);
-                            physicalLine.EndPoint = new Avalonia.Point(physicalLine.Width, physicalLine.Height);
-                        }
-                        else
-                        {
-                            physicalLine.StartPoint = new Avalonia.Point(physicalLine.Width, 0);
-                            physicalLine.EndPoint = new Avalonia.Point(0, physicalLine.Height);
-                        }*/
                     }
                 }
             }
@@ -124,43 +101,25 @@ namespace DataStructuresProject.Graphics
         /// Given a canvas item, will convert its virtual units to physical units and will apply them to the item.
         /// </summary>
         /// <param name="canvasItem"></param>
-        /// <returns>True if the item would be inside the visible area, false otherwise. If false, the item will automatically be hidden.</returns>
-        public static bool TransformItemToDeviceCoordinates(CanvasItem canvasItem)
+        public static void TransformItemToDeviceCoordinates(CanvasItem canvasItem)
         {
             //represents the size (width or height) that can be seen on the screen
             double viewWidth = Math.Abs(UnitConverter.ConvertPixelsToVirtualUnits(CanvasController.PhysicalWidth));
             double viewHeight = Math.Abs(UnitConverter.ConvertPixelsToVirtualUnits(CanvasController.PhysicalHeight));
 
-            //defines the clip space (the total size in virtual units that can be seen on the screen)
-            //1 and 2 are safe margins so that arrows work correctly even when a node is outside the clip space
             Vector2 clipSpaceTopLeftCorner = new Vector2(
-                CanvasController.VirtualOffset.X - VIRTUAL_SAFE_MARGIN_X - (viewWidth / 2),
-                CanvasController.VirtualOffset.Y + VIRTUAL_SAFE_MARGIN_Y + (viewHeight / 2));
-            Vector2 clipSpaceBottomRightCorner = new Vector2(
-                CanvasController.VirtualOffset.X + VIRTUAL_SAFE_MARGIN_X + (viewWidth / 2),
-                CanvasController.VirtualOffset.Y - VIRTUAL_SAFE_MARGIN_Y - (viewHeight / 2));
-
-            if (canvasItem.Position.X > clipSpaceBottomRightCorner.X ||
-                canvasItem.Position.Y < clipSpaceBottomRightCorner.Y ||
-                (canvasItem.Position.X + canvasItem.Width < clipSpaceTopLeftCorner.X) ||
-                //Y would be positive here
-                (canvasItem.Position.Y - canvasItem.Height > clipSpaceTopLeftCorner.Y))
-            {
-                //TODO: check why this puts arrows and nodes to random points
-                return false;
-            }
+                CanvasController.VirtualOffset.X - (viewWidth / 2),
+                CanvasController.VirtualOffset.Y + (viewHeight / 2));
 
             double physicalXDistanceFromTopLeftCorner = UnitConverter.ConvertVirtualUnitsToPixels(
-                canvasItem.Position.X - (clipSpaceTopLeftCorner.X + VIRTUAL_SAFE_MARGIN_X));
+                canvasItem.Position.X - clipSpaceTopLeftCorner.X);
             double physicalYDistanceFromTopLeftCorner = UnitConverter.ConvertVirtualUnitsToPixels(
-                clipSpaceTopLeftCorner.Y - VIRTUAL_SAFE_MARGIN_Y - canvasItem.Position.Y);
+                clipSpaceTopLeftCorner.Y - canvasItem.Position.Y);
 
             Canvas.SetLeft(canvasItem.PhysicalInstance, physicalXDistanceFromTopLeftCorner);
             Canvas.SetTop(canvasItem.PhysicalInstance, physicalYDistanceFromTopLeftCorner);
             canvasItem.PhysicalInstance.Width = UnitConverter.ConvertVirtualUnitsToPixels(canvasItem.Width);
             canvasItem.PhysicalInstance.Height = UnitConverter.ConvertVirtualUnitsToPixels(canvasItem.Height);
-
-            return true;
         }
 
         /// <summary>

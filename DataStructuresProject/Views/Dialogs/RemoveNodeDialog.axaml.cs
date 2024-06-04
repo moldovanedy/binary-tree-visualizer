@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using DataStructuresProject.Graphics;
@@ -30,14 +32,14 @@ namespace DataStructuresProject.Views.Dialogs
             ((IDialog)this).Draw(Root, Root.Bounds.Width, Root.Bounds.Height, DialogProperties);
         }
 
-        public async Task<object?> OpenDialog(Controls dialogs)
+        public async Task OpenDialog(Controls dialogs)
         {
             _dialogRef = dialogs;
             this.SizeChanged += this.RemoveNodeDialog_SizeChanged;
 
             dialogs.Add(this);
             await FadeInDialog();
-            return null;
+            KeyInput.Focus();
         }
 
         public async Task CloseDialog(Controls dialogs)
@@ -74,6 +76,7 @@ namespace DataStructuresProject.Views.Dialogs
 
         private async void CancelButton_Click(object? sender, RoutedEventArgs e)
         {
+            CancelButton.IsEnabled = false;
             await CloseDialog(_dialogRef!);
         }
 
@@ -81,8 +84,32 @@ namespace DataStructuresProject.Views.Dialogs
         {
             if (KeyInput.Value != null)
             {
-                CanvasController.DeleteNode((int)KeyInput.Value.Value);
+                bool success = CanvasController.DeleteNode((int)KeyInput.Value.Value);
+                RemoveButton.IsEnabled = false;
                 await CloseDialog(_dialogRef!);
+
+                if (!success)
+                {
+                    if (Application.Current!.TryGetResource("Strings.RemoveFailed", out object? errorMessage))
+                    {
+                        await Snackbar.ShowSnackbar(
+                            MainView.Instance!.MainCanvas,
+                            (errorMessage!.ToString() ?? string.Empty) + "!",
+                            Snackbar.MessageSeverity.Error);
+                    }
+                }
+            }
+        }
+
+        private async void Grid_KeyUp(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                await CloseDialog(_dialogRef!);
+            }
+            if (e.Key == Key.Enter)
+            {
+                RemoveButton_Click(null, new RoutedEventArgs());
             }
         }
     }

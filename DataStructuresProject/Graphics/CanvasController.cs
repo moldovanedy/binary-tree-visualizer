@@ -18,7 +18,7 @@ namespace DataStructuresProject.Graphics
         /// <summary>
         /// Represents the offset from the origin in virtual units.
         /// </summary>
-        public static Vector2 VirtualOffset { get; private set; } = Vector2.Zero;
+        public static Vector2 VirtualOffset { get; set; } = new Vector2();
         public static double PhysicalWidth { get; private set; } = 0;
         public static double PhysicalHeight { get; private set; } = 0;
         public static double Zoom { get; private set; } = 1.0f;
@@ -26,47 +26,46 @@ namespace DataStructuresProject.Graphics
         /// <summary>
         /// Contains all the relevant canvas items as a binary tree.
         /// </summary>
-        private static BinarySearchTree _physicalItems = new BinarySearchTree();
+        public static BinarySearchTree PhysicalItems { get; private set; } = new BinarySearchTree();
 
         public static void UpdateCanvasSize(double width, double height)
         {
             PhysicalWidth = width;
             PhysicalHeight = height;
-            CanvasRenderer.RedrawAllChildren(_physicalItems);
+            CanvasRenderer.RedrawAllChildren(PhysicalItems);
         }
 
         public static void UpdateZoomLevel(double zoom)
         {
             Zoom = Math.Clamp(zoom, 0.1, 5);
-            CanvasRenderer.RedrawAllChildren(_physicalItems);
+            CanvasRenderer.RedrawAllChildren(PhysicalItems);
         }
 
         public static void UpdateOffset(double deltaX, double deltaY)
         {
-            //Debug.WriteLine($"deltaX: {deltaX}, deltaY: {deltaY}");
             VirtualOffset.X += UnitConverter.ConvertPixelsToVirtualUnits(deltaX);
             VirtualOffset.Y += UnitConverter.ConvertPixelsToVirtualUnits(deltaY);
-            CanvasRenderer.RedrawAllChildren(_physicalItems);
+            CanvasRenderer.RedrawAllChildren(PhysicalItems);
         }
 
         public static bool AddNode(int key)
         {
-            BinarySearchTreeNode? duplicateNode = _physicalItems.Search(key);
+            BinarySearchTreeNode? duplicateNode = PhysicalItems.Search(key);
             if (duplicateNode != null)
             {
                 return false;
             }
 
-            Vector2 nodePosition = new Vector2(-0.5, 0.5);
+            //Vector2 nodePosition = new Vector2(-0.5, 0.5);
 
-            BinarySearchTreeNode? parentNode = _physicalItems.GetRoot();
+            BinarySearchTreeNode? parentNode = PhysicalItems.GetRoot();
             if (parentNode != null)
             {
                 while (true)
                 {
                     if (key < parentNode!.Key)
                     {
-                        nodePosition = new Vector2(nodePosition.X - 1, nodePosition.Y - 2);
+                        //nodePosition = new Vector2(nodePosition.X - 1, nodePosition.Y - 2);
 
                         if (parentNode.LeftNode == null)
                         {
@@ -79,7 +78,7 @@ namespace DataStructuresProject.Graphics
                     }
                     else
                     {
-                        nodePosition = new Vector2(nodePosition.X + 1, nodePosition.Y - 2);
+                        //nodePosition = new Vector2(nodePosition.X + 1, nodePosition.Y - 2);
 
                         if (parentNode.RightNode == null)
                         {
@@ -96,12 +95,11 @@ namespace DataStructuresProject.Graphics
             BinarySearchTreeNode dataNode = new BinarySearchTreeNode
             {
                 Key = key,
-                //ParentNode = parentNode,
             };
 
             TreeNode node = new TreeNode()
             {
-                Position = nodePosition,
+                NodeKey = key,
             };
             MainView.AddItemToCanvas(node.PhysicalInstance);
             dataNode.Data.Add(DataProps[DataNodeProperties.PhysicalNode], node);
@@ -121,23 +119,22 @@ namespace DataStructuresProject.Graphics
             //for the root node we won't have arrows
             if (parentNode != null)
             {
-                Arrow arrow = new Arrow()
-                {
-                    //up 2 units and left one unit, regardless of the orientation
-                    Position = new Vector2(nodePosition.X - 1, nodePosition.Y + 2)
-                };
+                Arrow arrow = new Arrow();
                 MainView.AddItemToCanvas(arrow.PhysicalInstance);
                 dataNode.Data.Add(DataProps[DataNodeProperties.UpperArrow], arrow);
             }
 
-            _physicalItems.Insert(key, dataNode.Data);
-            CanvasRenderer.RedrawAllChildren(_physicalItems);
+            PhysicalItems.Insert(key, dataNode.Data);
+            TreeGeometryController.DetermineCorrectNodePositions(PhysicalItems);
+            TreeGeometryController.SetCorrectNodePositions(PhysicalItems);
+            CanvasRenderer.RedrawAllChildren(PhysicalItems);
+            MainView.UpdateTreeInfo(PhysicalItems.Depth, PhysicalItems.Size);
             return true;
         }
 
         public static bool DeleteNode(int key)
         {
-            BinarySearchTreeNode? nodeToDelete = _physicalItems.Search(key);
+            BinarySearchTreeNode? nodeToDelete = PhysicalItems.Search(key);
             if (nodeToDelete == null)
             {
                 return false;
@@ -147,11 +144,18 @@ namespace DataStructuresProject.Graphics
             MainView.RemoveItemFromCanvas(physicalTreeNode.PhysicalInstance);
             Label physicalLabel = (Label)nodeToDelete.Data[DataProps[DataNodeProperties.Text]];
             MainView.RemoveItemFromCanvas(physicalLabel);
-            Arrow physicalArrow = (Arrow)nodeToDelete.Data[DataProps[DataNodeProperties.UpperArrow]];
-            MainView.RemoveItemFromCanvas(physicalArrow.PhysicalInstance);
+            //it might be the root node, don't try to delete the arrow as it's null
+            if (nodeToDelete.Data.TryGetValue(DataProps[DataNodeProperties.UpperArrow], out object? physicalArrow))
+            {
+                MainView.RemoveItemFromCanvas(((Arrow)physicalArrow).PhysicalInstance);
+            }
 
-            _physicalItems.Delete(key);
-            return true;
+            bool success = PhysicalItems.Delete(key);
+            TreeGeometryController.DetermineCorrectNodePositions(PhysicalItems);
+            TreeGeometryController.SetCorrectNodePositions(PhysicalItems);
+            CanvasRenderer.RedrawAllChildren(PhysicalItems);
+            MainView.UpdateTreeInfo(PhysicalItems.Depth, PhysicalItems.Size);
+            return success;
         }
     }
 

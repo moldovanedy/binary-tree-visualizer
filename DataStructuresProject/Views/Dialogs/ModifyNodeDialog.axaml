@@ -1,9 +1,8 @@
 <UserControl
-    x:Class="DataStructuresProject.Views.Dialogs.InsertNodeDialog"
+    x:Class="DataStructuresProject.Views.Dialogs.ModifyNodeDialog"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:dialogs="using:DataStructuresProject.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -48,14 +47,14 @@
                         <Setter Property="FontSize" Value="18" />
                     </Style>
 
-                    <Style Selector="Button#CreateButton">
-                        <Setter Property="Background" Value="#2E7D32" />
+                    <Style Selector="Button#ModifyButton">
+                        <Setter Property="Background" Value="#D32F2F" />
 
                         <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                            <Setter Property="Background" Value="#388E3C" />
+                            <Setter Property="Background" Value="#E53935" />
                         </Style>
                         <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                            <Setter Property="Background" Value="#43A047" />
+                            <Setter Property="Background" Value="#F44336" />
                         </Style>
                     </Style>
 
@@ -68,23 +67,37 @@
                     </Style>
                 </Border.Styles>
 
-                <Grid ColumnDefinitions="10,*,2*,10" RowDefinitions="25,35,*,40,15">
+                <Grid ColumnDefinitions="10,*,2*,10" RowDefinitions="25,35,3,35,*,40,15">
                     <Label
                         Grid.Row="1"
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Content="{DynamicResource Strings.NodeKey}"
+                        Content="{DynamicResource Strings.OldKey}"
                         FontSize="16" />
                     <NumericUpDown
-                        Name="KeyInput"
+                        Name="OldKeyInput"
                         Grid.Row="1"
                         Grid.Column="2"
                         FormatString="N0"
                         ParsingNumberStyle="Integer"
                         Value="0" />
 
-                    <StackPanel
+                    <Label
                         Grid.Row="3"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Content="{DynamicResource Strings.NewKey}"
+                        FontSize="16" />
+                    <NumericUpDown
+                        Name="NewKeyInput"
+                        Grid.Row="3"
+                        Grid.Column="2"
+                        FormatString="N0"
+                        ParsingNumberStyle="Integer"
+                        Value="0" />
+
+                    <StackPanel
+                        Grid.Row="5"
                         Grid.Column="1"
                         Grid.ColumnSpan="2"
                         HorizontalAlignment="Right"
@@ -95,9 +108,9 @@
                             Click="CancelButton_Click"
                             Content="{DynamicResource Strings.Cancel}" />
                         <Button
-                            Name="CreateButton"
-                            Click="CreateButton_Click"
-                            Content="{DynamicResource Strings.Insert}" />
+                            Name="ModifyButton"
+                            Click="ModifyButton_Click"
+                            Content="{DynamicResource Strings.Modify}" />
                     </StackPanel>
                 </Grid>
             </Border>
