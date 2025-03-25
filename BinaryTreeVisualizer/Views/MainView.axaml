@@ -1,0 +1,257 @@
+<UserControl
+    x:Class="BinaryTreeVisualizer.Views.MainView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Label.NodeDetailsLabels">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+        <Style Selector="Label.NodeDetailsLabelsValue">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <Style Selector="Grid.NodeDetailsRecordEven">
+            <Setter Property="Background" Value="#c0424242" />
+        </Style>
+        <Style Selector="Grid.NodeDetailsRecordOdd">
+            <Setter Property="Background" Value="#c0313131" />
+        </Style>
+
+        <Style Selector="Canvas#MainCanvas">
+            <Setter Property="Background" Value="#212121" />
+        </Style>
+        <Style Selector="StackPanel#DetailsStatusBar">
+            <Setter Property="Background" Value="#c0616161" />
+        </Style>
+        <Style Selector="StackPanel#AdditionalControls">
+            <Setter Property="Background" Value="#c0313131" />
+        </Style>
+        <Style Selector="StackPanel#TopLeftPanel">
+            <Setter Property="Background" Value="#c0424242" />
+        </Style>
+
+        <Style Selector="Button.ActionButton">
+            <Setter Property="Background" Value="#e0424242" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Margin" Value="0,5,5,0" />
+
+            <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#e0525252" />
+            </Style>
+        </Style>
+
+        <Style Selector="Button.TraverseButton">
+            <Setter Property="Padding" Value="5,2,5,2" />
+            <Setter Property="Background" Value="#c0303F9F" />
+
+            <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#c03949AB" />
+            </Style>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="200,*,150" RowDefinitions="200,*,30,22">
+        <Canvas
+            Name="MainCanvas"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Focusable="True"
+            KeyDown="Canvas_KeyDown"
+            KeyUp="Canvas_KeyUp"
+            PointerMoved="MainCanvas_PointerMoved"
+            PointerPressed="MainCanvas_PointerPressed"
+            PointerReleased="MainCanvas_PointerReleased"
+            PointerWheelChanged="MainCanvas_PointerWheelChanged"
+            SizeChanged="MainCanvas_SizeChanged" />
+
+        <StackPanel
+            Name="TopLeftPanel"
+            Grid.Row="0"
+            Grid.Column="0">
+            <StackPanel Name="DetailsPanel">
+                <Label
+                    Content="{DynamicResource Strings.NodeDetails}"
+                    FontSize="22"
+                    FontWeight="Bold" />
+
+                <Grid Classes="NodeDetailsRecordOdd" ColumnDefinitions="*,50">
+                    <Label
+                        Grid.Column="0"
+                        Classes="NodeDetailsLabels"
+                        Content="{DynamicResource Strings.NodeKey}" />
+                    <Label
+                        Name="DetailsNodeKey"
+                        Grid.Column="1"
+                        Classes="NodeDetailsLabels NodeDetailsLabelsValue"
+                        Content="-" />
+                </Grid>
+                <Grid Classes="NodeDetailsRecordEven" ColumnDefinitions="*,50">
+                    <Label
+                        Grid.Column="0"
+                        Classes="NodeDetailsLabels"
+                        Content="{DynamicResource Strings.DetailsNodeLevel}" />
+                    <Label
+                        Name="DetailsNodeLevel"
+                        Grid.Column="1"
+                        Classes="NodeDetailsLabels NodeDetailsLabelsValue"
+                        Content="-" />
+                </Grid>
+                <Grid Classes="NodeDetailsRecordOdd" ColumnDefinitions="*,50">
+                    <Label
+                        Grid.Column="0"
+                        Classes="NodeDetailsLabels"
+                        Content="{DynamicResource Strings.DetailsIsLeafNode}" />
+                    <Label
+                        Name="DetailsIsLeafNode"
+                        Grid.Column="1"
+                        Classes="NodeDetailsLabels NodeDetailsLabelsValue"
+                        Content="-" />
+                </Grid>
+            </StackPanel>
+
+            <ScrollViewer
+                Name="TraversePanel"
+                MaxHeight="200"
+                IsVisible="False">
+                <StackPanel MinHeight="100">
+                    <Label
+                        Content="{DynamicResource Strings.Traverse}"
+                        FontSize="22"
+                        FontWeight="Bold" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Label Content="{DynamicResource Strings.Preorder}" FontSize="14" />
+                        <Button
+                            Name="PreorderTraversalButton"
+                            Classes="TraverseButton"
+                            Click="PreorderTraversalButton_Click"
+                            Content="{DynamicResource Strings.Traverse}" />
+                    </StackPanel>
+
+                    <ScrollViewer Height="40" HorizontalScrollBarVisibility="Auto">
+                        <TextBlock
+                            Name="PreorderTraversalText"
+                            MinWidth="50"
+                            Background="#c0313131" />
+                    </ScrollViewer>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Label Content="{DynamicResource Strings.Inorder}" FontSize="14" />
+                        <Button
+                            Name="InorderTraversalButton"
+                            Classes="TraverseButton"
+                            Click="InorderTraversalButton_Click"
+                            Content="{DynamicResource Strings.Traverse}" />
+                    </StackPanel>
+
+                    <ScrollViewer Height="40" HorizontalScrollBarVisibility="Auto">
+                        <TextBlock
+                            Name="InorderTraversalText"
+                            MinWidth="50"
+                            Background="#c0313131" />
+                    </ScrollViewer>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Label Content="{DynamicResource Strings.Postorder}" FontSize="14" />
+                        <Button
+                            Name="PostorderTraversalButton"
+                            Classes="TraverseButton"
+                            Click="PostorderTraversalButton_Click"
+                            Content="{DynamicResource Strings.Traverse}" />
+                    </StackPanel>
+
+                    <ScrollViewer Height="40" HorizontalScrollBarVisibility="Auto">
+                        <TextBlock
+                            Name="PostorderTraversalText"
+                            MinWidth="50"
+                            Background="#c0313131" />
+                    </ScrollViewer>
+                </StackPanel>
+            </ScrollViewer>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="2"
+            HorizontalAlignment="Right">
+            <Button
+                HorizontalAlignment="Right"
+                Classes="ActionButton"
+                Click="InsertButton_Click"
+                Content="{DynamicResource Strings.Insert}"
+                HotKey="Ctrl+Add" />
+            <Button
+                HorizontalAlignment="Right"
+                Classes="ActionButton"
+                Click="RemoveButton_Click"
+                Content="{DynamicResource Strings.Remove}"
+                HotKey="Ctrl+Subtract" />
+            <Button
+                HorizontalAlignment="Right"
+                Classes="ActionButton"
+                Click="ModifyButton_Click"
+                Content="{DynamicResource Strings.Modify}"
+                HotKey="Ctrl+M" />
+            <Button
+                HorizontalAlignment="Right"
+                Background="#D32F2F"
+                Classes="ActionButton"
+                Click="DestroyButton_Click"
+                Content="{DynamicResource Strings.Destroy}" />
+            <Button
+                HorizontalAlignment="Right"
+                Background="#3949AB"
+                Classes="ActionButton"
+                Click="RecenterButton_Click"
+                Content="{DynamicResource Strings.Recenter}" />
+        </StackPanel>
+
+        <StackPanel
+            Name="AdditionalControls"
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Orientation="Horizontal"
+            Spacing="10">
+            <CheckBox
+                Name="HandleTraversingCheckBox"
+                Content="{DynamicResource Strings.HandleTraversing}"
+                IsCheckedChanged="HandleTraversing_OnIsCheckedChanged"/>
+            <CheckBox
+                Name="HighlightLeafNodesCheckBox"
+                Content="{DynamicResource Strings.HighlightLeafNodes}"
+                IsCheckedChanged="HighlightLeafNodes_OnIsCheckedChanged"/>
+        </StackPanel>
+
+        <StackPanel
+            Name="DetailsStatusBar"
+            Grid.Row="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Orientation="Horizontal">
+            <Label Name="DepthLabel" FontSize="14" />
+            <Label Name="SizeLabel" FontSize="14" />
+        </StackPanel>
+
+        <Panel
+            Name="DialogPanel"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            ZIndex="999" />
+    </Grid>
+</UserControl>
